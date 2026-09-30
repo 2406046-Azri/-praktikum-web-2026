@@ -10,13 +10,16 @@
 - Uji coba Laragon MySQL berjalan pada Port 3306.
 - Konfigurasi identitas Git global.
 ### Spesifikasi Perangkat
-**Laptop**: Axioo Hype 5
-**Prosesor**: AMD Ryzen
-**Sistem Operasi**: Windows 11
-**RAM**: 16 GB
-**Penyimpanan**: SSD
-### Versi git npm node
-**Node.js**: v24.21.0
-**npm**: v24.21.0
-**Git**: 2.56.0.windows.1
-**Arsitektur**: 64-bit
+
+* **Laptop:** Axioo Hype 5
+* **Prosesor:** AMD Ryzen
+* **Sistem Operasi:** Windows 11
+* **RAM:** 16 GB
+* **Penyimpanan:** SSD
+
+### Versi Git, npm, Node.js
+
+* **Node.js:** v24.21.0
+* **npm:** v24.21.0
+* **Git:** 2.56.0.windows.1
+* **Arsitektur:** 64-bit
