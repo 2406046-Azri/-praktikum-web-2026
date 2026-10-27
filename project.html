@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Saya - Azriel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-aurora);
+            background-size: 200% 100%;
+            animation: auroraShift 4s ease infinite;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: var(--shadow-glow);
+        }
+        .stat-value {
+            display: block;
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .form-grid .full-width { grid-column: 1 / -1; }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 8px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        .checkbox-row label {
+            margin-bottom: 0;
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .error-msg {
+            color: #f472b6;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+        input.invalid, select.invalid {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15) !important;
+        }
+        @media (max-width: 700px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .toolbar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .toolbar .search-box {
+            flex: 1;
+            min-width: 220px;
+            position: relative;
+        }
+        .toolbar .search-box input { padding-left: 44px; }
+        .toolbar .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .result-count {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .project-card {
+            padding: 24px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition);
+            animation: fadeInUp 0.4s ease-out;
+        }
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--gradient-aurora);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform var(--transition);
+        }
+        .project-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+        .project-card:hover::before { transform: scaleY(1); }
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .card-top h3 {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        .category-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            margin-top: 6px;
+        }
+        .budget {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            margin-top: 14px;
+        }
+        .status-done {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .status-progress {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+        .status-badge::before {
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .card-actions button {
+            padding: 9px 18px;
+            font-size: 0.85rem;
+            box-shadow: none;
+        }
+        .btn-toggle {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        .btn-toggle:hover {
+            background: var(--gradient-primary);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+        }
+        .btn-delete {
+            background: transparent;
+            color: var(--accent-light);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+        }
+        .btn-delete:hover {
+            background: rgba(236, 72, 153, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-lg);
+            color: var(--text-muted);
+        }
+        .empty-state .icon {
+            font-size: 2.6rem;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+        .form-card { margin-bottom: 32px; }
+        .form-card h2 { margin-bottom: 24px; }
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            padding: 14px 22px;
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transform: translateY(120%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            max-width: 320px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-left-color: #34d399; }
+        .toast.error { border-left-color: var(--accent); }
+        .toast.info { border-left-color: var(--aurora-1); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Project Saya</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="kontak.html">Kontak Saya</a></li>
+                <li><a href="resume.html">Resume</a></li>
+                <li><a href="project.html">Project</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ================= FITUR 1: FORM INPUT PROYEK ================= -->
+        <section class="form-card" id="form-section">
+            <h2>Tambah Proyek Baru</h2>
+            <form id="project-form" novalidate>
+                <div class="form-grid">
+                    <div class="full-width">
+                        <label for="judul">Judul Proyek</label>
+                        <input type="text" id="judul" name="judul" placeholder="Contoh: Aplikasi Kasir Sederhana" autocomplete="off">
+                        <div class="error-msg" id="error-judul">Judul proyek tidak boleh kosong.</div>
+                    </div>
+
+                    <div>
+                        <label for="kategori">Kategori</label>
+                        <select id="kategori" name="kategori">
+                            <option value="Web App">Web App</option>
+                            <option value="Mobile App">Mobile App</option>
+                            <option value="Desktop App">Desktop App</option>
+                            <option value="UI/UX Design">UI/UX Design</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="anggaran">Estimasi Anggaran (Rp)</label>
+                        <input type="number" id="anggaran" name="anggaran" placeholder="Contoh: 1500000" min="0" step="1000">
+                        <div class="error-msg" id="error-anggaran">Anggaran harus lebih besar dari 0.</div>
+                    </div>
+
+                    <div class="full-width checkbox-row">
+                        <input type="checkbox" id="selesai" name="selesai">
+                        <label for="selesai">Status: Sudah Selesai</label>
+                    </div>
+
+                    <div class="full-width">
+                        <button type="submit">➕ Tambah Proyek</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- ================= FITUR 2 & 3: STATISTIK, PENCARIAN, DAFTAR ================= -->
+        <section id="project">
+            <h2>Daftar Project</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-total">0</span>
+                    <span class="stat-label">Total Proyek</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-selesai">0</span>
+                    <span class="stat-label">Selesai</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-progress">0</span>
+                    <span class="stat-label">Dalam Pengerjaan</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-anggaran">Rp 0</span>
+                    <span class="stat-label">Total Anggaran</span>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Cari nama proyek..." autocomplete="off">
+                </div>
+                <span class="result-count" id="result-count">Menampilkan 0 proyek</span>
+            </div>
+
+            <div id="project-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Portofolio Mahasiswa - All Rights Reserved.</p>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        /* ============================================================
+           1. STATE APLIKASI
+           ============================================================ */
+        let projects = [
+            { id: 1, judul: 'Aplikasi Kasir Sederhana', kategori: 'Web App', anggaran: 1500000, selesai: true },
+            { id: 2, judul: 'Sistem Inventaris Keuangan', kategori: 'Web App', anggaran: 2500000, selesai: false },
+            { id: 3, judul: 'Kalkulator Sederhana', kategori: 'Mobile App', anggaran: 800000, selesai: true }
+        ];
+
+        let currentSearch = '';
+
+        /* ============================================================
+           2. REFERENSI DOM
+           ============================================================ */
+        const form          = document.getElementById('project-form');
+        const inputJudul    = document.getElementById('judul');
+        const inputKategori = document.getElementById('kategori');
+        const inputAnggaran = document.getElementById('anggaran');
+        const inputSelesai  = document.getElementById('selesai');
+        const errorJudul    = document.getElementById('error-judul');
+        const errorAnggaran = document.getElementById('error-anggaran');
+        const projectList   = document.getElementById('project-list');
+        const searchInput   = document.getElementById('search-input');
+        const resultCount   = document.getElementById('result-count');
+        const toast         = document.getElementById('toast');
+
+        /* ============================================================
+           3. UTILITAS
+           ============================================================ */
+        function formatRupiah(angka) {
+            return 'Rp ' + Number(angka).toLocaleString('id-ID');
+        }
+
+        function showToast(message, type = 'info') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => {
+                toast.className = 'toast';
+            }, 2600);
+        }
+
+        function clearValidation() {
+            errorJudul.classList.remove('show');
+            errorAnggaran.classList.remove('show');
+            inputJudul.classList.remove('invalid');
+            inputAnggaran.classList.remove('invalid');
+        }
+
+        /* ============================================================
+           4. RENDER: DAFTAR PROYEK
+           ============================================================ */
+        function renderProjects() {
+            const filtered = projects.filter(p =>
+                p.judul.toLowerCase().includes(currentSearch.toLowerCase())
+            );
+
+            resultCount.textContent = `Menampilkan ${filtered.length} dari ${projects.length} proyek`;
+
+            if (filtered.length === 0) {
+                projectList.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📁</span>
+                        <p>${projects.length === 0
+                            ? 'Belum ada proyek. Tambahkan proyek pertama Anda di atas!'
+                            : 'Tidak ada proyek yang cocok dengan pencarian.'}</p>
+                    </div>`;
+                return;
+            }
+
+            projectList.innerHTML = filtered.map(p => `
+                <article class="project-card">
+                    <div class="card-top">
+                        <div>
+                            <h3>${escapeHtml(p.judul)}</h3>
+                            <span class="category-tag">${escapeHtml(p.kategori)}</span>
+                        </div>
+                        <span class="budget">${formatRupiah(p.anggaran)}</span>
+                    </div>
+
+                    <span class="status-badge ${p.selesai ? 'status-done' : 'status-progress'}">
+                        ${p.selesai ? 'Selesai' : 'Dalam Pengerjaan'}
+                    </span>
+
+                    <div class="card-actions">
+                        <button class="btn-toggle" data-action="toggle" data-id="${p.id}">
+                            🔄 Ubah Status
+                        </button>
+                        <button class="btn-delete" data-action="delete" data-id="${p.id}">
+                            🗑️ Hapus Proyek
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /* ============================================================
+           5. RENDER: STATISTIK
+           ============================================================ */
+        function renderStats() {
+            const total       = projects.length;
+            const selesai     = projects.filter(p => p.selesai).length;
+            const progress    = total - selesai;
+            const totalBudget = projects.reduce((sum, p) => sum + Number(p.anggaran || 0), 0);
+
+            document.getElementById('stat-total').textContent    = total;
+            document.getElementById('stat-selesai').textContent  = selesai;
+            document.getElementById('stat-progress').textContent = progress;
+            document.getElementById('stat-anggaran').textContent = formatRupiah(totalBudget);
+        }
+
+        function renderAll() {
+            renderProjects();
+            renderStats();
+        }
+
+        /* ============================================================
+           6. FITUR 1: HANDLE SUBMIT FORM
+           ============================================================ */
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            clearValidation();
+
+            const judul    = inputJudul.value.trim();
+            const kategori = inputKategori.value;
+            const anggaran = parseFloat(inputAnggaran.value);
+            const selesai  = inputSelesai.checked;
+
+            let valid = true;
+
+            if (judul === '') {
+                errorJudul.classList.add('show');
+                inputJudul.classList.add('invalid');
+                valid = false;
+            }
+
+            if (isNaN(anggaran) || anggaran <= 0) {
+                errorAnggaran.classList.add('show');
+                inputAnggaran.classList.add('invalid');
+                valid = false;
+            }
+
+            if (!valid) {
+                showToast('Periksa kembali data yang diisi.', 'error');
+                return;
+            }
+
+            const newProject = {
+                id: Date.now(),
+                judul: judul,
+                kategori: kategori,
+                anggaran: anggaran,
+                selesai: selesai
+            };
+
+            projects = [...projects, newProject];
+
+            form.reset();
+            clearValidation();
+            renderAll();
+
+            showToast(`Proyek "${newProject.judul}" berhasil ditambahkan!`, 'success');
+        });
+
+        /* ============================================================
+           7. FITUR 2: LIVE SEARCH
+           ============================================================ */
+        searchInput.addEventListener('input', function (e) {
+            currentSearch = e.target.value;
+            renderProjects();
+        });
+
+        /* ============================================================
+           8. FITUR 3: EVENT DELEGATION TOGGLE & DELETE
+           ============================================================ */
+        projectList.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const id = Number(btn.dataset.id);
+
+            if (action === 'toggle') {
+                projects = projects.map(p =>
+                    p.id === id ? { ...p, selesai: !p.selesai } : p
+                );
+                const updated = projects.find(p => p.id === id);
+                renderAll();
+                showToast(
+                    `Status "${updated.judul}" diubah menjadi ${updated.selesai ? 'Selesai' : 'Dalam Pengerjaan'}.`,
+                    'info'
+                );
+            }
+
+            if (action === 'delete') {
+                const target = projects.find(p => p.id === id);
+                if (!target) return;
+
+                if (confirm(`Hapus proyek "${target.judul}"?`)) {
+                    projects = projects.filter(p => p.id !== id);
+                    renderAll();
+                    showToast(`Proyek "${target.judul}" telah dihapus.`, 'success');
+                }
+            }
+        });
+
+        /* ============================================================
+           9. INISIALISASI
+           ============================================================ */
+        renderAll();
+    </script>
+</body>
+</html>
