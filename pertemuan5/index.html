@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -33,8 +32,18 @@
             </div>
         </form>
 
+        <!-- FITUR 1: Penghitung Jumlah Tugas -->
+        <div class="task-counter" id="taskCounter">
+            Total: 0 Tugas | Selesai: 0 | Belum Selesai: 0
+        </div>
+
         <!-- Daftar Tugas -->
         <ul class="todo-list" id="todoList"></ul>
+
+        <!-- FITUR 2: Tombol Bersihkan Tugas Selesai -->
+        <button type="button" class="clear-btn" id="clearCompletedBtn" style="display: none;">
+            Bersihkan Tugas Selesai
+        </button>
     </div>
 
     <!-- File JavaScript -->
